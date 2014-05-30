@@ -12,6 +12,9 @@ https://docs.djangoproject.com/en/1.6/ref/settings/
 import os
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
+def mkpath(*args):
+    return os.path.normpath(os.path.join(BASE_DIR, *args))
+
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.6/howto/deployment/checklist/
@@ -36,6 +39,7 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'imagetask',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -58,7 +62,7 @@ WSGI_APPLICATION = 'formcompletion.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'NAME': mkpath('db.sqlite3'),
     }
 }
 
@@ -80,3 +84,25 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.6/howto/static-files/
 
 STATIC_URL = '/static/'
+
+STATICFILES_DIRS = (
+    mkpath('static'),
+)
+
+
+TEMPLATE_DIRS = (
+    mkpath('templates'),
+)
+
+
+# Sets the mapping of message level to message tag,
+# which is typically rendered as a CSS class in HTML.
+from django.contrib.messages import constants as messages
+MESSAGE_TAGS = {
+    messages.ERROR: 'danger',  # bootstrap3 compatibility
+}
+
+
+MEDIA_ROOT = mkpath('media')
+
+MEDIA_URL = '/media/'
