@@ -6,7 +6,9 @@ class EnabledImageManager(models.Manager):
 
 class Image(models.Model):
     title = models.CharField(max_length=50)
-    file = models.FileField(upload_to='images')
+    file = models.ImageField(upload_to='images', width_field='width', height_field='height')
+    width = models.IntegerField(blank=True)
+    height = models.IntegerField(blank=True)
     enabled = models.BooleanField(default=True)
 
     objects = models.Manager()

@@ -1,0 +1,76 @@
+{% extends "imagetask/base.html" %}
+{% block title %}{{ block.super }} :: student{% endblock %}
+{% load staticfiles %}
+
+
+{% block content %}
+<div class="row">
+    <div id="slots">
+        <div></div>
+        <div></div>
+        <div></div>
+    </div>
+</div>
+<div class="row">
+    <div id="image_options">
+        {% for image in images %}
+        <img src="{{ image.file.url }}" id="img{{ image.id }}" width="{{ image.file.width }}" height="{{ image.file.height }}">
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+
+
+{% block css %}
+<style media="screen" type="text/css">
+    #slots div {
+        float: left;
+        width: 200px;
+        height: 300px;
+        padding: 10px;
+        padding-top: 40px;
+        padding-bottom: 0;
+        border: 2px solid #333;
+        -moz-border-radius: 10px;
+        -webkit-border-radius: 10px;
+        border-radius: 10px;
+        margin: 0 0 0 10px;
+        background: #fff;
+    }
+
+    #slots div.hovered {
+        background: #aaa;
+    }
+</style>
+{% endblock %}
+
+
+{% block js %}
+<script src="{% static "js/jquery-ui-1.10.4.min.js" %}"></script>
+<script>
+    function imageId(img) {
+        return $(img).attr('id').substring(3);
+    }
+
+    function handleImageDrop(event, ui) {
+        //ui.draggable.draggable('disable');
+        //$(this).droppable('disable');        
+        ui.draggable.position({of: $(this)});
+        ui.draggable.draggable('option', 'revert', false);        
+    }
+
+    $(document).ready(function () {
+        $('#image_options img').draggable({
+            stack: '#image_options img',
+            cursor: 'move',
+            revert: true
+        });
+
+        $('#slots div').droppable({
+            accept: '#image_options img',
+            hoverClass: 'hovered',
+            drop: handleImageDrop
+        });
+    });
+</script>
+{% endblock %}
