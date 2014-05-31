@@ -41,6 +41,17 @@
     #slots div.hovered {
         background: #aaa;
     }
+
+    #image_options img {
+        cursor: move;
+    }
+
+    #image_options img.ui-draggable-dragging {
+        -moz-box-shadow: 0 0 1em rgba(0, 0, 0, .8);
+        -webkit-box-shadow: 0 0 1em rgba(0, 0, 0, .8);
+        box-shadow: 0 0 1em rgba(0, 0, 0, .8);
+    }
+
 </style>
 {% endblock %}
 
