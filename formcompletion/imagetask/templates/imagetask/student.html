@@ -53,13 +53,42 @@
     }
 
     function handleImageDrop(event, ui) {
-        //ui.draggable.draggable('disable');
-        //$(this).droppable('disable');        
+        var image_id = $(this).data('image_id');
+
+        // if slot already contains an image
+        // reset image to original position
+        if (image_id) {
+            $('#' + image_id).draggable('option', 'revert', true);
+            $('#' + image_id).css({
+                'left': $('#' + image_id).data('orig_left'),
+                'top': $('#' + image_id).data('orig_top')
+            });
+        }
+
         ui.draggable.position({of: $(this)});
-        ui.draggable.draggable('option', 'revert', false);        
+        ui.draggable.draggable('option', 'revert', false);
+
+        var draggable_id = ui.draggable.attr('id');
+
+        // if image moved from one slot to another
+        // delete id from old slots
+        $('#slots div').each(function () {
+            if ($(this).data('image_id') == draggable_id) {
+                $(this).data('image_id', null);
+            }
+        });
+
+        // save image id in slot
+        $(this).data('image_id', draggable_id);
     }
 
     $(document).ready(function () {
+        // remember original positions
+        $('#image_options img').each(function () {
+            $(this).data('orig_left', $(this).css('left'));
+            $(this).data('orig_top', $(this).css('top'));
+        });
+
         $('#image_options img').draggable({
             stack: '#image_options img',
             cursor: 'move',
