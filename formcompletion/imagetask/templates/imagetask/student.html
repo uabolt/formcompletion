@@ -4,25 +4,35 @@
 
 
 {% block content %}
+<center><h1>Student</h1></center>
+<hr>
 <div class="row">
-    <div id="slots">
+    <div id="slots" class="col-lg-7 col-centered">
         <div></div>
         <div></div>
         <div></div>
     </div>
 </div>
+<hr>
 <div class="row">
-    <div id="image_options">
+    <div id="image_options" class="col-lg-12 col-centered">
         {% for image in images %}
         <img src="{{ image.file.url }}" id="img{{ image.id }}" width="{{ image.file.width }}" height="{{ image.file.height }}">
         {% endfor %}
     </div>
 </div>
+<hr>
+<center><button type="button" class="btn btn-primary btn-lg">Submit</button></center>
 {% endblock %}
 
 
 {% block css %}
 <style media="screen" type="text/css">
+    .col-centered {
+        float: none;
+        margin: 0 auto;
+    }
+
     #slots div {
         float: left;
         width: 200px;
@@ -51,7 +61,6 @@
         -webkit-box-shadow: 0 0 1em rgba(0, 0, 0, .8);
         box-shadow: 0 0 1em rgba(0, 0, 0, .8);
     }
-
 </style>
 {% endblock %}
 
