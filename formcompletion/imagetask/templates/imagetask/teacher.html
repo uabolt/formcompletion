@@ -1,0 +1,55 @@
+{% extends "imagetask/base.html" %}
+{% block title %}{{ block.super }} :: teacher{% endblock %}
+{% load staticfiles %}
+
+
+{% block content %}
+<center><h1>Teacher</h1></center>
+<hr>
+<div class="row">
+    <div class="col-lg-6 col-centered">
+        {% for image in images %}
+        <img src="{{ image.file.url }}" id="img{{ image.id }}" width="{{ image.file.width }}" height="{{ image.file.height }}">
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+
+
+{% block css %}
+<style media="screen" type="text/css">
+    .col-centered {
+        float: none;
+        margin: 0 auto;
+    }
+
+    #slots div {
+        float: left;
+        width: 200px;
+        height: 300px;
+        padding: 10px;
+        padding-top: 40px;
+        padding-bottom: 0;
+        border: 2px solid #333;
+        -moz-border-radius: 10px;
+        -webkit-border-radius: 10px;
+        border-radius: 10px;
+        margin: 0 0 0 10px;
+        background: #fff;
+    }
+
+    #slots div.hovered {
+        background: #aaa;
+    }
+
+    #image_options img {
+        cursor: move;
+    }
+
+    #image_options img.ui-draggable-dragging {
+        -moz-box-shadow: 0 0 1em rgba(0, 0, 0, .8);
+        -webkit-box-shadow: 0 0 1em rgba(0, 0, 0, .8);
+        box-shadow: 0 0 1em rgba(0, 0, 0, .8);
+    }
+</style>
+{% endblock %}
