@@ -1,0 +1,33 @@
+.col-centered {
+    float: none;
+    margin: 0 auto;
+}
+
+#slots div {
+    float: left;
+    width: 200px;
+    height: 300px;
+    padding: 10px;
+    padding-top: 40px;
+    padding-bottom: 0;
+    border: 2px solid #333;
+    -moz-border-radius: 10px;
+    -webkit-border-radius: 10px;
+    border-radius: 10px;
+    margin: 0 0 0 10px;
+    background: #fff;
+}
+
+#slots div.hovered {
+    background: #aaa;
+}
+
+#image_options img {
+    cursor: move;
+}
+
+#image_options img.ui-draggable-dragging {
+    -moz-box-shadow: 0 0 1em rgba(0, 0, 0, .8);
+    -webkit-box-shadow: 0 0 1em rgba(0, 0, 0, .8);
+    box-shadow: 0 0 1em rgba(0, 0, 0, .8);
+}

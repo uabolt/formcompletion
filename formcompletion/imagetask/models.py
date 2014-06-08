@@ -1,4 +1,5 @@
 from django.db import models
+import uuid
 
 class EnabledImageManager(models.Manager):
     def get_queryset(self):
@@ -16,3 +17,22 @@ class Image(models.Model):
 
     def __unicode__(self):
         return self.title
+
+class ImageTask(models.Model):
+    task_code = models.CharField(max_length=32, unique=True, default=lambda:uuid.uuid4().hex)
+    images = models.ManyToManyField(Image, related_name='images+')
+    answer = models.ManyToManyField(Image, related_name='answer+')
+
+    def __unicode__(self):
+        return self.task_code
+
+    @models.permalink
+    def student_url(self):
+        return ('imagetask_student', [self.task_code])
+
+    @models.permalink
+    def teacher_url(self):
+        return ('imagetask_teacher', [self.task_code])
+
+    def get_absolute_url(self):
+        return self.teacher_url()

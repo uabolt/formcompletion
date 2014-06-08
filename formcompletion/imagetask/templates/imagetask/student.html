@@ -17,62 +17,27 @@
 <div class="row">
     <div id="image_options" class="col-lg-12 col-centered">
         {% for image in images %}
-        <img src="{{ image.file.url }}" id="img{{ image.id }}" width="{{ image.file.width }}" height="{{ image.file.height }}">
+        <img src="{{ image.file.url }}" id="{{ image.id }}" width="{{ image.file.width }}" height="{{ image.file.height }}">
         {% endfor %}
     </div>
 </div>
 <hr>
-<center><button type="button" class="btn btn-primary btn-lg">Submit</button></center>
-{% endblock %}
-
-
-{% block css %}
-<style media="screen" type="text/css">
-    .col-centered {
-        float: none;
-        margin: 0 auto;
-    }
-
-    #slots div {
-        float: left;
-        width: 200px;
-        height: 300px;
-        padding: 10px;
-        padding-top: 40px;
-        padding-bottom: 0;
-        border: 2px solid #333;
-        -moz-border-radius: 10px;
-        -webkit-border-radius: 10px;
-        border-radius: 10px;
-        margin: 0 0 0 10px;
-        background: #fff;
-    }
-
-    #slots div.hovered {
-        background: #aaa;
-    }
-
-    #image_options img {
-        cursor: move;
-    }
-
-    #image_options img.ui-draggable-dragging {
-        -moz-box-shadow: 0 0 1em rgba(0, 0, 0, .8);
-        -webkit-box-shadow: 0 0 1em rgba(0, 0, 0, .8);
-        box-shadow: 0 0 1em rgba(0, 0, 0, .8);
-    }
-</style>
+<center><button type="button" id="submit" class="btn btn-primary btn-lg">Submit</button></center>
 {% endblock %}
 
 
 {% block js %}
 <script src="{% static "js/jquery-ui-1.10.4.min.js" %}"></script>
 <script>
-    function imageId(img) {
-        return $(img).attr('id').substring(3);
+    function get_results() {
+        var results = [];
+        $("#slots div").each(function () {
+            results.push($(this).data('image_id'));
+        });
+        return results;
     }
 
-    function handleImageDrop(event, ui) {
+    function handle_image_drop(event, ui) {
         var image_id = $(this).data('image_id');
 
         // if slot already contains an image
@@ -102,6 +67,43 @@
         $(this).data('image_id', draggable_id);
     }
 
+    $(document).ajaxSend(function(event, xhr, settings) {
+        function getCookie(name) {
+            var cookieValue = null;
+            if (document.cookie && document.cookie != '') {
+                var cookies = document.cookie.split(';');
+                for (var i = 0; i < cookies.length; i++) {
+                    var cookie = jQuery.trim(cookies[i]);
+                    // Does this cookie string begin with the name we want?
+                    if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+        function sameOrigin(url) {
+            // url could be relative or scheme relative or absolute
+            var host = document.location.host; // host + port
+            var protocol = document.location.protocol;
+            var sr_origin = '//' + host;
+            var origin = protocol + sr_origin;
+            // Allow absolute or scheme relative URLs to same origin
+            return (url == origin || url.slice(0, origin.length + 1) == origin + '/') ||
+                (url == sr_origin || url.slice(0, sr_origin.length + 1) == sr_origin + '/') ||
+                // or any other URL that isn't scheme relative or absolute i.e relative.
+                !(/^(\/\/|http:|https:).*/.test(url));
+        }
+        function safeMethod(method) {
+            return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+        }
+
+        if (!safeMethod(settings.type) && sameOrigin(settings.url)) {
+            xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
+        }
+    });    
+
     $(document).ready(function () {
         // remember original positions
         $('#image_options img').each(function () {
@@ -118,7 +120,21 @@
         $('#slots div').droppable({
             accept: '#image_options img',
             hoverClass: 'hovered',
-            drop: handleImageDrop
+            drop: handle_image_drop
+        });
+
+        $('#submit').click(function () {
+            var results = get_results();
+            if (results.indexOf(undefined) != -1) {
+                alert('please finish the task');
+                return;
+            }
+
+            $.post(
+                "{% url 'imagetask_answers' %}",
+                {slot1: results[0], slot2: results[1], slot3: results[2]},
+                function () { window.location = "{% url 'imagetask_done' %}" }
+            );
         });
     });
 </script>
