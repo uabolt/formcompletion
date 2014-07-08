@@ -4,138 +4,169 @@
 
 
 {% block content %}
-<center><h1>Student</h1></center>
-<hr>
-<div class="row">
-    <div id="slots" class="col-lg-7 col-centered">
-        <div></div>
-        <div></div>
-        <div></div>
-    </div>
-</div>
-<hr>
-<div class="row">
-    <div id="image_options" class="col-lg-12 col-centered">
-        {% for image in images %}
-        <img src="{{ image.file.url }}" id="{{ image.id }}" width="{{ image.file.width }}" height="{{ image.file.height }}">
-        {% endfor %}
-    </div>
-</div>
-<hr>
-<center><button type="button" id="submit" class="btn btn-primary btn-lg">Submit</button></center>
-{% endblock %}
+   <center><h1>Student</h1></center>
+
+   <form role="form">
+   <label for="short answer questions"></label>
+   {% for question in questions %}
+      <div class="form-group">
+         <label for="question{{forloop.counter}}">{{ question.question_text }}</label>
+         <input type="text" class="form-control" id="question_id_{{ question.id }}">
+      </div>
+   {% endfor %}
+
+   <div class="form-group">
+      <label for="images">Image Placement</label>
+      <div class="row">
+          <div id="slots" class="col-lg-7 col-centered">
+              <div></div>
+              <div></div>
+              <div></div>
+          </div>
+      </div>
+
+      <hr>
+      <div class="row">
+          <div id="image_options" class="col-lg-12 col-centered">
+              {% for image in images %}
+              <img src="{{ image.file.url }}" id="{{ image.id }}" width="{{ image.file.width }}" height="{{ image.file.height }}">
+              {% endfor %}
+          </div>
+      </div>
+   </div>
+   <center><button type="button" id="submit" class="btn btn-primary btn-lg">Submit</button></center>
+   {% endblock %}
 
 
-{% block js %}
-<script src="{% static "js/jquery-ui-1.10.4.min.js" %}"></script>
-<script>
-    function get_results() {
-        var results = [];
-        $("#slots div").each(function () {
-            results.push($(this).data('image_id'));
-        });
-        return results;
-    }
+   {% block js %}
+   <script src="{% static "js/jquery-ui-1.10.4.min.js" %}"></script>
+   <script>
+       function get_results() {
+           //var results = [];
+           var results = {};
+           $("#slots div").each(function (index) {
+               //results.push($(this).data('image_id'));
+               results['image_slot_'+index] = $(this).data('image_id');
+           });
 
-    function handle_image_drop(event, ui) {
-        var image_id = $(this).data('image_id');
+           {% for question in questions %}
+           results['{{ question.id }}'] = document.getElementById("question_id_{{ question.id }}").value;
+           {% endfor %}
 
-        // if slot already contains an image
-        // reset image to original position
-        if (image_id) {
-            $('#' + image_id).draggable('option', 'revert', true);
-            $('#' + image_id).css({
-                'left': $('#' + image_id).data('orig_left'),
-                'top': $('#' + image_id).data('orig_top')
-            });
-        }
+           console.log(results); //TODO
+           return results;
+       }
 
-        ui.draggable.position({of: $(this)});
-        ui.draggable.draggable('option', 'revert', false);
+       function handle_image_drop(event, ui) {
+           var image_id = $(this).data('image_id');
 
-        var draggable_id = ui.draggable.attr('id');
+           // if slot already contains an image
+           // reset image to original position
+           if (image_id) {
+               $('#' + image_id).draggable('option', 'revert', true);
+               $('#' + image_id).css({
+                   'left': $('#' + image_id).data('orig_left'),
+                   'top': $('#' + image_id).data('orig_top')
+               });
+           }
 
-        // if image moved from one slot to another
-        // delete id from old slots
-        $('#slots div').each(function () {
-            if ($(this).data('image_id') == draggable_id) {
-                $(this).data('image_id', null);
-            }
-        });
+           ui.draggable.position({of: $(this)});
+           ui.draggable.draggable('option', 'revert', false);
 
-        // save image id in slot
-        $(this).data('image_id', draggable_id);
-    }
+           var draggable_id = ui.draggable.attr('id');
 
-    $(document).ajaxSend(function(event, xhr, settings) {
-        function getCookie(name) {
-            var cookieValue = null;
-            if (document.cookie && document.cookie != '') {
-                var cookies = document.cookie.split(';');
-                for (var i = 0; i < cookies.length; i++) {
-                    var cookie = jQuery.trim(cookies[i]);
-                    // Does this cookie string begin with the name we want?
-                    if (cookie.substring(0, name.length + 1) == (name + '=')) {
-                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                        break;
-                    }
-                }
-            }
-            return cookieValue;
-        }
-        function sameOrigin(url) {
-            // url could be relative or scheme relative or absolute
-            var host = document.location.host; // host + port
-            var protocol = document.location.protocol;
-            var sr_origin = '//' + host;
-            var origin = protocol + sr_origin;
-            // Allow absolute or scheme relative URLs to same origin
-            return (url == origin || url.slice(0, origin.length + 1) == origin + '/') ||
-                (url == sr_origin || url.slice(0, sr_origin.length + 1) == sr_origin + '/') ||
-                // or any other URL that isn't scheme relative or absolute i.e relative.
-                !(/^(\/\/|http:|https:).*/.test(url));
-        }
-        function safeMethod(method) {
-            return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
-        }
+           // if image moved from one slot to another
+           // delete id from old slots
+           $('#slots div').each(function () {
+               if ($(this).data('image_id') == draggable_id) {
+                   $(this).data('image_id', null);
+               }
+           });
 
-        if (!safeMethod(settings.type) && sameOrigin(settings.url)) {
-            xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
-        }
-    });    
+           // save image id in slot
+           $(this).data('image_id', draggable_id);
+       }
 
-    $(document).ready(function () {
-        // remember original positions
-        $('#image_options img').each(function () {
-            $(this).data('orig_left', $(this).css('left'));
-            $(this).data('orig_top', $(this).css('top'));
-        });
+       $(document).ajaxSend(function(event, xhr, settings) {
+           function getCookie(name) {
+               var cookieValue = null;
+               if (document.cookie && document.cookie != '') {
+                   var cookies = document.cookie.split(';');
+                   for (var i = 0; i < cookies.length; i++) {
+                       var cookie = jQuery.trim(cookies[i]);
+                       // Does this cookie string begin with the name we want?
+                       if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                           cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                           break;
+                       }
+                   }
+               }
+               return cookieValue;
+           }
+           function sameOrigin(url) {
+               // url could be relative or scheme relative or absolute
+               var host = document.location.host; // host + port
+               var protocol = document.location.protocol;
+               var sr_origin = '//' + host;
+               var origin = protocol + sr_origin;
+               // Allow absolute or scheme relative URLs to same origin
+               return (url == origin || url.slice(0, origin.length + 1) == origin + '/') ||
+                   (url == sr_origin || url.slice(0, sr_origin.length + 1) == sr_origin + '/') ||
+                   // or any other URL that isn't scheme relative or absolute i.e relative.
+                   !(/^(\/\/|http:|https:).*/.test(url));
+           }
+           function safeMethod(method) {
+               return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+           }
 
-        $('#image_options img').draggable({
-            stack: '#image_options img',
-            cursor: 'move',
-            revert: true
-        });
+           if (!safeMethod(settings.type) && sameOrigin(settings.url)) {
+               xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
+           }
+       });    
 
-        $('#slots div').droppable({
-            accept: '#image_options img',
-            hoverClass: 'hovered',
-            drop: handle_image_drop
-        });
+       $(document).ready(function () {
+           // remember original positions
+           $('#image_options img').each(function () {
+               $(this).data('orig_left', $(this).css('left'));
+               $(this).data('orig_top', $(this).css('top'));
+           });
 
-        $('#submit').click(function () {
-            var results = get_results();
-            if (results.indexOf(undefined) != -1) {
-                alert('please finish the task');
-                return;
-            }
+           $('#image_options img').draggable({
+               stack: '#image_options img',
+               cursor: 'move',
+               revert: true
+           });
 
-            $.post(
-                "{% url 'imagetask_answers' %}",
-                {slot1: results[0], slot2: results[1], slot3: results[2]},
-                function () { window.location = "{% url 'imagetask_done' %}" }
-            );
-        });
-    });
-</script>
-{% endblock %}
+           $('#slots div').droppable({
+               accept: '#image_options img',
+               hoverClass: 'hovered',
+               drop: handle_image_drop
+           });
+
+           $('#submit').click(function () {
+               var results = get_results();
+               for (var key in results){
+                  if (! results.hasOwnProperty(key)){
+                     continue;
+                  }
+                  console.log(results[key]);
+                  if (results[key] == '' || results[key] == undefined){
+                     alert('please finish the task');
+                     return;
+                  }
+               }
+               //if (results.indexOf(undefined) != -1) {
+               //    alert('please finish the task');
+               //    return;
+               //}
+
+               $.post(
+                   "{% url 'imagetask_answers' %}",
+                   results,
+                   function () { window.location = "{% url 'imagetask_done' %}" }
+               );
+           });
+       });
+   </script>
+   </form>
+   {% endblock %}
