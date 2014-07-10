@@ -1,21 +1,41 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
-from imagetask.models import Image, ImageTask, Question, FormCompletionTask
+from imagetask.models import Image, ImageTask, Question, CheckboxMatrixQuestion, FormCompletionTask
+from math import sqrt
 
 def student(request, task_code, template_name='imagetask/student.html'):
     #task = get_object_or_404(ImageTask, task_code=task_code)
     task = get_object_or_404(FormCompletionTask, task_code=task_code)
     request.session['task_code'] = task_code
+    #TODO get from the task
     images = Image.enabled_objects.all()
     questions = Question.objects.all()
-    data = dict(task = task, images = images, questions = questions)
+    #checkboxMatrixQuestions = CheckboxMatrixQuestion.objects.all()
+    checkboxMatrixQuestions = task.checkboxMatrixQuestions.all()
+
+    #TODO fix cbox matrix sizing
+    boxesCount = []
+    for cbmq in checkboxMatrixQuestions:
+        boxesCount = range(cbmq.size)
+
+    #TODO pass in object
+    cbSqrt = int(sqrt(cbmq.size))
+    data = dict(task = task, images = images, questions = questions, \
+            checkboxMatrixQuestions = checkboxMatrixQuestions, \
+            boxesCount = boxesCount, cbSqrt = cbSqrt)
     return render(request, template_name, data)
 
 def teacher(request, task_code, template_name='imagetask/teacher.html'):
-    task = get_object_or_404(ImageTask, task_code=task_code)
-    student_url = request.build_absolute_uri(task.student_url())
-    teacher_url = request.build_absolute_uri(task.teacher_url())
-    data = dict(images=task.images, student_url=student_url, teacher_url=teacher_url)
+    task = get_object_or_404(FormCompletionTask, task_code=task_code)
+    imagetask = task.image_task_ids.last() #TODO last only
+
+    questions = task.questions.all()
+    checkboxMatrixQuestions = task.checkboxMatrixQuestions.all()
+
+    #student_url = request.build_absolute_uri(imagetask.student_url())
+    #teacher_url = request.build_absolute_uri(imagetask.teacher_url())
+    data = dict(images=imagetask.correctanswers, #student_url=student_url, teacher_url=teacher_url,
+            questions = questions, checkboxMatrixQuestions = checkboxMatrixQuestions)
     return render(request, template_name, data)
 
 def teacher_new(request):
@@ -39,15 +59,21 @@ def student_answers(request):
             messages.error('invalid image id')
             return redirect(task.student_url())
 
+        cbmtask = task.checkboxMatrixQuestions.last() #takes last ONLY TODO
         imagetask = task.image_task_ids.first()
         answers = []
+        cbmanswers = []
         for key,val in results: # these are reversed
             if key.startswith("image_slot_"):
                 answers.append(val)
+            elif key.startswith("cbm"):
+                cbmtask.answer = val # a string, for now TODO
+                cbmtask.save()
             else:
                 question = task.questions.get(id=key)
                 question.answer = val
                 question.save()
+
 
         imagetask.set_imageanswer_order(list(reversed(answers)))
         imagetask.save()

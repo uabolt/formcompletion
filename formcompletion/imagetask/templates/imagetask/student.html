@@ -10,8 +10,35 @@
    <label for="short answer questions"></label>
    {% for question in questions %}
       <div class="form-group">
-         <label for="question{{forloop.counter}}">{{ question.question_text }}</label>
+         <!-- omitted for student <label for="question{{forloop.counter}}">{{ question.question_text }}</label> -->
          <input type="text" class="form-control" id="question_id_{{ question.id }}">
+      </div>
+   {% endfor %}
+
+   <label for="Checkbox questions"></label>
+   {% for checkboxquestion in checkboxMatrixQuestions %}
+      <div class="form-group">
+         <label for="check-question{{forloop.counter}}">
+            <!-- omitted for student {{ checkboxquestion.question_text }} -->
+
+            {% for i in boxesCount %}
+               {% if forloop.counter == 1 %}
+                  <div class="row">
+               {% endif %}
+
+                     <div class="col-md-1 col-md-offset-1"> 
+                        <input type="checkbox" id=cbmquestion{{forloop.parentloop.counter}}_id_{{forloop.counter}}>
+                     </div>
+
+               {% if forloop.counter == boxesCount|length %}
+                  </div>
+                  {% elif forloop.counter|divisibleby:cbSqrt and forloop.counter < boxesCount|length %}
+                  </div>
+                  <div class="row">
+               {% endif %}
+
+            {% endfor %}
+         </label>
       </div>
    {% endfor %}
 
@@ -44,6 +71,7 @@
        function get_results() {
            //var results = [];
            var results = {};
+           var boxes = [];
            $("#slots div").each(function (index) {
                //results.push($(this).data('image_id'));
                results['image_slot_'+index] = $(this).data('image_id');
@@ -53,7 +81,19 @@
            results['{{ question.id }}'] = document.getElementById("question_id_{{ question.id }}").value;
            {% endfor %}
 
+           {% for cbmquestion in checkboxMatrixQuestions %}
+              results['cbm{{ forloop.counter0 }}'] = [];
+           {% for count in boxesCount %}
+              var box = document.getElementById(
+                 "cbmquestion{{ forloop.parentloop.counter }}_id_{{ forloop.counter }}").checked;
+              boxes.push(box);
+           {% endfor %}
+           boxesStr = boxes.toString();
+           results['cbm{{ forloop.counter0 }}'] = boxesStr;
+           {% endfor %}
+
            console.log(results); //TODO
+           console.log(results['cbm0']); //TODO
            return results;
        }
 
@@ -145,26 +185,26 @@
 
            $('#submit').click(function () {
                var results = get_results();
-               for (var key in results){
-                  if (! results.hasOwnProperty(key)){
-                     continue;
-                  }
-                  console.log(results[key]);
-                  if (results[key] == '' || results[key] == undefined){
-                     alert('please finish the task');
-                     return;
-                  }
-               }
-               //if (results.indexOf(undefined) != -1) {
-               //    alert('please finish the task');
-               //    return;
+               //for (var key in results){
+               //   if (! results.hasOwnProperty(key)){
+               //      continue;
+               //   }
+               //   console.log(results[key]);
+               //   if (results[key] == '' || results[key] == undefined){
+               //      alert('please finish the task');
+               //      return;
+               //   }
                //}
+               
+               var r = confirm("Are you sure you wish to submit?");
 
-               $.post(
-                   "{% url 'imagetask_answers' %}",
-                   results,
-                   function () { window.location = "{% url 'imagetask_done' %}" }
-               );
+               if (r == true) {
+                  $.post(
+                      "{% url 'imagetask_answers' %}",
+                      results,
+                      function () { window.location = "{% url 'imagetask_done' %}" }
+                  );
+               }
            });
        });
    </script>

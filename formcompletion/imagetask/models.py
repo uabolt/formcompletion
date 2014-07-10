@@ -24,7 +24,7 @@ class Image(models.Model):
 class ImageTask(models.Model):
     task_code = models.CharField(max_length=32, unique=True, default=lambda:uuid.uuid4().hex)
     images = models.ManyToManyField(Image, related_name='images+')
-    #answers = models.ManyToManyField(Image, related_name='answers+')
+    answers = models.ManyToManyField(Image, related_name='answers+')
 
     def __unicode__(self):
         return self.task_code
@@ -45,7 +45,7 @@ class ImageAnswer(models.Model):
     used to capture the order of image answers, via metadata option 'order_with_respect_to'
     """
     image = models.OneToOneField(Image)
-    imagetask = models.ForeignKey(ImageTask, related_name='imageanswer')
+    imagetask = models.ForeignKey(ImageTask, related_name='correctanswers')
 
     def __unicode__(self):
         return self.image.title
@@ -54,18 +54,32 @@ class ImageAnswer(models.Model):
         order_with_respect_to = 'imagetask'
     
 class Question(models.Model):
-    question_text = models.CharField(max_length=200)
+    question_text = models.CharField(max_length=200, blank=True)
     objects = models.Manager()
     answer = models.CharField(max_length=200)
+    correct_answer = models.CharField(max_length=200) #TODO make a class like CheckboxMatrixAnswer etc
+
 
     def __unicode__(self):
         return self.question_text
+
+class CheckboxMatrixQuestion(models.Model):
+    question_text = models.CharField(max_length=200, blank=True)
+    size = models.IntegerField() # the size of the square matrix of checkboxes #TODO change to sidelength?
+    answer = models.CharField(max_length=500) # users input, as a comma-sep str of "false" and "true"
+
+class CheckboxMatrixAnswer(models.Model):
+    question = models.ForeignKey(CheckboxMatrixQuestion, related_name='cbmanswer')
+    answer = models.BooleanField()
     
+
 class FormCompletionTask(models.Model):
     task_code = models.CharField(max_length=32, unique=True, 
             default=lambda:uuid.uuid4().hex)
     questions = models.ManyToManyField(Question)
-    image_task_ids = models.ManyToManyField(ImageTask) #TODO ch to imagetask (no '_'
+    checkboxMatrixQuestions = \
+            models.ManyToManyField(CheckboxMatrixQuestion)
+    image_task_ids = models.ManyToManyField(ImageTask) #TODO ch to imagetask (no '_')
 
     def __unicode__(self):
         return self.task_code
