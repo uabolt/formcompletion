@@ -24,7 +24,7 @@ class Image(models.Model):
 class ImageTask(models.Model):
     task_code = models.CharField(max_length=32, unique=True, default=lambda:uuid.uuid4().hex)
     images = models.ManyToManyField(Image, related_name='images+')
-    answers = models.ManyToManyField(Image, related_name='answers+')
+    #answers = models.ManyToManyField(Image, related_name='answers+')
 
     def __unicode__(self):
         return self.task_code
@@ -42,15 +42,16 @@ class ImageTask(models.Model):
 
 class ImageAnswer(models.Model):
     """
-    not used currently
+    used to capture the order of image answers, via metadata option 'order_with_respect_to'
     """
-    #TODO rm
     image = models.OneToOneField(Image)
-    imagetask = models.ForeignKey(ImageTask)
+    imagetask = models.ForeignKey(ImageTask, related_name='imageanswer')
 
     def __unicode__(self):
         return self.image.title
 
+    class Meta:
+        order_with_respect_to = 'imagetask'
     
 class Question(models.Model):
     question_text = models.CharField(max_length=200)

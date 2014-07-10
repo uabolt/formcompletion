@@ -34,28 +34,22 @@ def student_answers(request):
 
     if request.method == 'POST':
         try:
-            #TODO
-            #slot1 = Image.objects.get(pk=request.POST['slot1'])
-            #slot2 = Image.objects.get(pk=request.POST['slot2'])
-            #slot3 = Image.objects.get(pk=request.POST['slot3'])
             results = request.POST.items()
         except Image.NotFound:
             messages.error('invalid image id')
             return redirect(task.student_url())
 
-        #task.answer = [slot1, slot2, slot3]
-        #task.answer = foo;
-        imagetask = ImageTask.objects.last()
+        imagetask = task.image_task_ids.first()
         answers = []
-        for key,val in results:
+        for key,val in results: # these are reversed
             if key.startswith("image_slot_"):
-                answers.append(Image.objects.get(id=val))
+                answers.append(val)
             else:
                 question = task.questions.get(id=key)
                 question.answer = val
                 question.save()
 
-        imagetask.answers = answers
+        imagetask.set_imageanswer_order(list(reversed(answers)))
         imagetask.save()
         task.save() #TODO needed?
         return redirect('imagetask_done')

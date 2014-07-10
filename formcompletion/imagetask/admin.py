@@ -17,7 +17,7 @@ class ImageAdmin(admin.ModelAdmin):
 
 class ImageTaskAdmin(admin.ModelAdmin):
     #fields = ['task_code', 'images']
-    pass
+    inlines = [ImageAnswerInline]
 
 class QuestionAdmin(admin.ModelAdmin):
     fields = ['question_text']
