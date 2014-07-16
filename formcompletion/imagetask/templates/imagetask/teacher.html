@@ -18,7 +18,7 @@
       <div class="form-group">
          <label for="question{{forloop.counter}}">{{ question.question_text }}</label>
          <input type="text" class="form-control" id="question_id_{{ question.id }}" 
-            placeholder = {{ question.correct_answer }}>
+            placeholder ="{{ question.correct_answer }}">
       </div>
    {% endfor %}
 
@@ -29,10 +29,10 @@
          <label for="check-question{{forloop.counter}}">
             Checkbox Question: "{{ checkboxquestion.question_text }}"<br>
          <div class="radio col-md-offset-1 col-md-11"> 
-            checked boxes, by position: 
+            checked boxes, by position:<br> 
             {% for ans in checkboxquestion.cbmanswer.all %}
                {% if ans.answer == True %}
-                  {{ans.id}}
+                  {{ans.id}}{% if not forloop.last %},{% endif %}
                {% endif %}
             {% endfor %}
          </div>
@@ -47,9 +47,9 @@
       <label for="imagetask-instance">
        Image task images, in order:
          <div class="row col-lg-6 col-centered">
-            {% for ans in images.all %}
-            <img src="{{ ans.image.file.url }}" id="img{{ ans.image.id }}" 
-               width="{{ ans.image.file.width }}" height="{{ ans.image.file.height }}">
+            {% for ans in images %}
+            <img src="{{ ans.file.url }}" id="img{{ ans.id }}" 
+               width="{{ ans.file.width }}" height="{{ ans.file.height }}">
             {% endfor %}
          </div>
       </label>

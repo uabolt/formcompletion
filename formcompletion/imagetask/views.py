@@ -1,6 +1,6 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
-from imagetask.models import Image, ImageTask, Question, CheckboxMatrixQuestion, FormCompletionTask
+from imagetask.models import Image, ImageTask, ImageAnswer, Question, CheckboxMatrixQuestion, FormCompletionTask
 from math import sqrt
 
 def student(request, task_code, template_name='imagetask/student.html'):
@@ -28,13 +28,21 @@ def student(request, task_code, template_name='imagetask/student.html'):
 def teacher(request, task_code, template_name='imagetask/teacher.html'):
     task = get_object_or_404(FormCompletionTask, task_code=task_code)
     imagetask = task.image_task_ids.last() #TODO last only
+    if len(task.image_task_ids.all()) > 1:
+        print "WARNING: multiple image tasks detected. This is not currently supported"
 
     questions = task.questions.all()
     checkboxMatrixQuestions = task.checkboxMatrixQuestions.all()
 
-    #student_url = request.build_absolute_uri(imagetask.student_url())
-    #teacher_url = request.build_absolute_uri(imagetask.teacher_url())
-    data = dict(images=imagetask.correctanswers, #student_url=student_url, teacher_url=teacher_url,
+    imageOrder = [x for x in imagetask.correctImageOrder[1:-1].split(', ')]
+    images = []
+    #for i in imagetask.get_imagecorrectanswer_order():
+    for i in imageOrder:
+       images.append(imagetask.images.get(id=i))
+
+    student_url = request.build_absolute_uri(task.student_url())
+    teacher_url = request.build_absolute_uri(task.teacher_url())
+    data = dict(images=images, student_url=student_url, teacher_url=teacher_url,
             questions = questions, checkboxMatrixQuestions = checkboxMatrixQuestions)
     return render(request, template_name, data)
 
@@ -64,7 +72,7 @@ def student_answers(request):
         answers = []
         cbmanswers = []
         for key,val in results: # these are reversed
-            if key.startswith("image_slot_"):
+            if key.startswith("image_slot_"): #TODO extract id to assign position
                 answers.append(val)
             elif key.startswith("cbm"):
                 cbmtask.answer = val # a string, for now TODO
@@ -74,9 +82,11 @@ def student_answers(request):
                 question.answer = val
                 question.save()
 
+        sorted_list = list(reversed([int(a) for a in answers]))
+        imagetask.set_imageanswer_order(sorted_list)
 
-        imagetask.set_imageanswer_order(list(reversed(answers)))
         imagetask.save()
+        print imagetask.get_imageanswer_order()
         task.save() #TODO needed?
         return redirect('imagetask_done')
 

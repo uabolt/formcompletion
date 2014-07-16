@@ -24,35 +24,34 @@ class Image(models.Model):
 class ImageTask(models.Model):
     task_code = models.CharField(max_length=32, unique=True, default=lambda:uuid.uuid4().hex)
     images = models.ManyToManyField(Image, related_name='images+')
-    answers = models.ManyToManyField(Image, related_name='answers+')
+    correctImageOrder = models.CharField(max_length=200) # TODO string, for now
 
     def __unicode__(self):
         return self.task_code
 
-    @models.permalink
-    def student_url(self):
-        return ('imagetask_student', [self.task_code])
-
-    @models.permalink
-    def teacher_url(self):
-        return ('imagetask_teacher', [self.task_code])
-
-    def get_absolute_url(self):
-        return self.teacher_url()
 
 class ImageAnswer(models.Model):
     """
     used to capture the order of image answers, via metadata option 'order_with_respect_to'
     """
     image = models.OneToOneField(Image)
-    imagetask = models.ForeignKey(ImageTask, related_name='correctanswers')
+    imagetask = models.ForeignKey(ImageTask, related_name='answersGiven')
 
     def __unicode__(self):
         return self.image.title
 
     class Meta:
         order_with_respect_to = 'imagetask'
-    
+
+""" TODO
+class ImageCorrectAnswer(models.Model):
+    image = models.ManyToManyField(Image)
+    imagetask = models.ForeignKey(ImageTask, related_name='correctAnswers')
+
+    class Meta:
+        order_with_respect_to = 'imagetask'
+"""
+
 class Question(models.Model):
     question_text = models.CharField(max_length=200, blank=True)
     objects = models.Manager()
@@ -80,6 +79,14 @@ class FormCompletionTask(models.Model):
     checkboxMatrixQuestions = \
             models.ManyToManyField(CheckboxMatrixQuestion)
     image_task_ids = models.ManyToManyField(ImageTask) #TODO ch to imagetask (no '_')
+
+    @models.permalink
+    def student_url(self):
+        return ('imagetask_student', [self.task_code])
+
+    @models.permalink
+    def teacher_url(self):
+        return ('imagetask_teacher', [self.task_code])
 
     def __unicode__(self):
         return self.task_code
