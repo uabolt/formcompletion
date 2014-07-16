@@ -25,6 +25,7 @@ class ImageTask(models.Model):
     task_code = models.CharField(max_length=32, unique=True, default=lambda:uuid.uuid4().hex)
     images = models.ManyToManyField(Image, related_name='images+')
     correctImageOrder = models.CharField(max_length=200) # TODO string, for now
+    imageOrder = models.CharField(max_length=200) # TODO string, for now
 
     def __unicode__(self):
         return self.task_code

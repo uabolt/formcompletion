@@ -83,7 +83,9 @@ def student_answers(request):
                 question.save()
 
         sorted_list = list(reversed([int(a) for a in answers]))
+        print sorted_list
         imagetask.set_imageanswer_order(sorted_list)
+        imagetask.imageOrder = str(sorted_list) #TODO fix use of string...
 
         imagetask.save()
         print imagetask.get_imageanswer_order()
