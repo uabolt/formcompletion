@@ -9,8 +9,7 @@ def student(request, task_code, template_name='imagetask/student.html'):
     request.session['task_code'] = task_code
     #TODO get from the task
     images = Image.enabled_objects.all()
-    questions = Question.objects.all()
-    #checkboxMatrixQuestions = CheckboxMatrixQuestion.objects.all()
+    questions = task.questions.all()
     checkboxMatrixQuestions = task.checkboxMatrixQuestions.all()
 
     #TODO fix cbox matrix sizing
@@ -20,9 +19,9 @@ def student(request, task_code, template_name='imagetask/student.html'):
 
     #TODO pass in object
     cbSqrt = int(sqrt(cbmq.size))
-    data = dict(task = task, images = images, questions = questions, \
-            checkboxMatrixQuestions = checkboxMatrixQuestions, \
-            boxesCount = boxesCount, cbSqrt = cbSqrt)
+    data = dict(task=task, images=images, questions=questions,
+            checkboxMatrixQuestions=checkboxMatrixQuestions,
+            boxesCount=boxesCount, cbSqrt=cbSqrt)
     return render(request, template_name, data)
 
 def teacher(request, task_code, template_name='imagetask/teacher.html'):
@@ -67,15 +66,15 @@ def student_answers(request):
             messages.error('invalid image id')
             return redirect(task.student_url())
 
-        cbmtask = task.checkboxMatrixQuestions.last() #takes last ONLY TODO
+        cbmtask = task.checkboxMatrixQuestions.last()  # takes last ONLY TODO
         imagetask = task.image_task_ids.first()
         answers = []
         cbmanswers = []
-        for key,val in results: # these are reversed
-            if key.startswith("image_slot_"): #TODO extract id to assign position
+        for key, val in results:  # these are reversed
+            if key.startswith("image_slot_"):  # TODO extract id to assign position
                 answers.append(val)
             elif key.startswith("cbm"):
-                cbmtask.answer = val # a string, for now TODO
+                cbmtask.answer = val  # a string, for now TODO
                 cbmtask.save()
             else:
                 question = task.questions.get(id=key)

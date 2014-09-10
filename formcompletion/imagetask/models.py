@@ -21,28 +21,32 @@ class Image(models.Model):
         return self.title
 
 
-class ImageTask(models.Model):
-    task_code = models.CharField(max_length=32, unique=True, default=lambda:uuid.uuid4().hex)
-    images = models.ManyToManyField(Image, related_name='images+')
-    correctImageOrder = models.CharField(max_length=200) # TODO string, for now
-    imageOrder = models.CharField(max_length=200) # TODO string, for now
-
-    def __unicode__(self):
-        return self.task_code
-
-
 class ImageAnswer(models.Model):
     """
     used to capture the order of image answers, via metadata option 'order_with_respect_to'
     """
     image = models.OneToOneField(Image)
-    imagetask = models.ForeignKey(ImageTask, related_name='answersGiven')
+    #imagetask = models.ManyToManyField(ImageTask, related_name='answersGiven')
 
     def __unicode__(self):
         return self.image.title
 
-    class Meta:
-        order_with_respect_to = 'imagetask'
+    #class Meta:
+    #    order_with_respect_to = 'imagetask'
+
+class ImageTask(models.Model):
+    task_code = models.CharField(max_length=32, unique=True, default=lambda:uuid.uuid4().hex)
+    images = models.ManyToManyField(Image, related_name='images+')
+    correctImageOrder = models.CharField(max_length=200) # TODO rm. string, for now
+    correct_Ans_1 = models.ManyToManyField(Image,
+            related_name='correctImage1')
+    correct_Ans_2 = models.ManyToManyField(Image, related_name='correctImage2+')
+    correct_Ans_3 = models.ManyToManyField(Image, related_name='correctImage3+')
+    imageOrder = models.CharField(max_length=200) # TODO string, for now
+
+    def __unicode__(self):
+        return self.task_code 
+
 
 """ TODO
 class ImageCorrectAnswer(models.Model):
