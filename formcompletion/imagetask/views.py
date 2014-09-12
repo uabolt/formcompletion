@@ -34,10 +34,11 @@ def teacher(request, task_code, template_name='imagetask/teacher.html'):
     checkboxMatrixQuestions = task.checkboxMatrixQuestions.all()
 
     imageOrder = [x for x in imagetask.correctImageOrder[1:-1].split(', ')]
-    images = []
+    images = [imagetask.correct_Ans_1.first(), imagetask.correct_Ans_2.first(),
+            imagetask.correct_Ans_3.first()]
     #for i in imagetask.get_imagecorrectanswer_order():
-    for i in imageOrder:
-       images.append(imagetask.images.get(id=i))
+    #for i in imageOrder:
+    #   images.append(imagetask.images.get(id=i))
 
     student_url = request.build_absolute_uri(task.student_url())
     teacher_url = request.build_absolute_uri(task.teacher_url())
@@ -81,13 +82,15 @@ def student_answers(request):
                 question.answer = val
                 question.save()
 
-        sorted_list = list(reversed([int(a) for a in answers]))
-        print sorted_list
-        imagetask.set_imageanswer_order(sorted_list)
-        imagetask.imageOrder = str(sorted_list) #TODO fix use of string...
-
+        sorted_list = list(reversed(answers))
+        images = imagetask.images
+        # given_Ans_X.last() holds the latest answer (if task is run more than
+        # once)
+        imagetask.given_Ans_1.add(images.get(id=sorted_list[0]))
+        imagetask.given_Ans_2.add(images.get(id=sorted_list[1]))
+        imagetask.given_Ans_3.add(images.get(id=sorted_list[2]))
         imagetask.save()
-        print imagetask.get_imageanswer_order()
+
         task.save() #TODO needed?
         return redirect('imagetask_done')
 

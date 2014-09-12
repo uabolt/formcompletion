@@ -38,10 +38,16 @@ class ImageTask(models.Model):
     task_code = models.CharField(max_length=32, unique=True, default=lambda:uuid.uuid4().hex)
     images = models.ManyToManyField(Image, related_name='images+')
     correctImageOrder = models.CharField(max_length=200) # TODO rm. string, for now
+
     correct_Ans_1 = models.ManyToManyField(Image,
-            related_name='correctImage1')
+            related_name='correctImage1+')
     correct_Ans_2 = models.ManyToManyField(Image, related_name='correctImage2+')
     correct_Ans_3 = models.ManyToManyField(Image, related_name='correctImage3+')
+
+    given_Ans_1 = models.ManyToManyField(Image, related_name='givenImage1+')
+    given_Ans_2 = models.ManyToManyField(Image, related_name='givenImage2+')
+    given_Ans_3 = models.ManyToManyField(Image, related_name='givenImage3+')
+
     imageOrder = models.CharField(max_length=200) # TODO string, for now
 
     def __unicode__(self):
