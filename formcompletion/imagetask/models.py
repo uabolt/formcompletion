@@ -63,15 +63,17 @@ class ImageCorrectAnswer(models.Model):
         order_with_respect_to = 'imagetask'
 """
 
-class Question(models.Model):
+class Question(models.Model): # TODO rename to TextQuestion
     question_text = models.CharField(max_length=200, blank=True)
     objects = models.Manager()
     answer = models.CharField(max_length=200)
     correct_answer = models.CharField(max_length=200) #TODO make a class like CheckboxMatrixAnswer etc
 
-
     def __unicode__(self):
         return self.question_text
+
+class TextAnswer(models.Model):
+    answer = models.CharField(max_length=200, blank=True)
 
 class CheckboxMatrixQuestion(models.Model):
     question_text = models.CharField(max_length=200, blank=True)
@@ -82,14 +84,22 @@ class CheckboxMatrixAnswer(models.Model):
     question = models.ForeignKey(CheckboxMatrixQuestion, related_name='cbmanswer')
     answer = models.BooleanField()
     
+class FormCompletionTaskAnswers(models.Model):
+    textAnswers = models.ForeignKey(TextAnswer, related_name='textAnswers')
+    cbmAnswers = models.ForeignKey(CheckboxMatrixAnswer,
+            related_name='cbmAnswers')
+    imageAnswers = models.ForeignKey(ImageAnswer, related_name='imageAnswers')
 
 class FormCompletionTask(models.Model):
     task_code = models.CharField(max_length=32, unique=True, 
             default=lambda:uuid.uuid4().hex)
-    questions = models.ManyToManyField(Question)
+    questions = models.ManyToManyField(Question) # TODO rename to 'textQuestions'
     checkboxMatrixQuestions = \
             models.ManyToManyField(CheckboxMatrixQuestion)
     image_task_ids = models.ManyToManyField(ImageTask) #TODO ch to imagetask (no '_')
+    formCompletionAnswers = models.OneToOneField(FormCompletionTaskAnswers,
+            related_name='formcompletionAnswers', blank=True, null=True)
+
 
     @models.permalink
     def student_url(self):

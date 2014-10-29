@@ -1,6 +1,7 @@
 from django.contrib import admin
 from imagetask.models import Image, ImageTask, Question, CheckboxMatrixQuestion,\
-CheckboxMatrixAnswer, FormCompletionTask, ImageAnswer #, ImageCorrectAnswer 
+CheckboxMatrixAnswer, FormCompletionTask, ImageAnswer, FormCompletionTaskAnswers 
+#, ImageCorrectAnswer 
 from forms import ImageTaskAdminForm
 from re import compile, search    
 
@@ -52,12 +53,17 @@ class CheckboxMatrixQuestionAdmin(admin.ModelAdmin):
     pass
 
 class FormCompletionTaskAdmin(admin.ModelAdmin):
+    fields = ['task_code', 'questions','checkboxMatrixQuestions',
+    'image_task_ids']
     view_on_site = True
 
+class FormCompletionTaskAnswersAdmin(admin.ModelAdmin):
+    fields = ['textAnswers','cbmAnswers','imageAnswers']
 
 admin.site.register(Image, ImageAdmin)
 admin.site.register(ImageTask, ImageTaskAdmin)
 admin.site.register(Question, QuestionAdmin)
 admin.site.register(CheckboxMatrixQuestion, \
         CheckboxMatrixQuestionAdmin)
+admin.site.register(FormCompletionTaskAnswers, FormCompletionTaskAnswersAdmin)
 admin.site.register(FormCompletionTask, FormCompletionTaskAdmin)

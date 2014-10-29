@@ -1,6 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
-from imagetask.models import Image, ImageTask, ImageAnswer, Question, CheckboxMatrixQuestion, FormCompletionTask
+from imagetask.models import Image, ImageTask, ImageAnswer, Question,\
+CheckboxMatrixQuestion, FormCompletionTask, FormCompletionTaskAnswers
 from math import sqrt
 
 def student(request, task_code, template_name='imagetask/student.html'):
@@ -69,11 +70,12 @@ def student_answers(request):
 
         cbmtask = task.checkboxMatrixQuestions.last()  # takes last ONLY TODO
         imagetask = task.image_task_ids.first()
-        answers = []
+        answers = task.formCompletionAnswers
+        image_answers = []
         cbmanswers = []
         for key, val in results:  # these are reversed
             if key.startswith("image_slot_"):  # TODO extract id to assign position
-                answers.append(val)
+                image_answers.append(val)
             elif key.startswith("cbm"):
                 cbmtask.answer = val  # a string, for now TODO
                 cbmtask.save()
@@ -82,8 +84,9 @@ def student_answers(request):
                 question.answer = val
                 question.save()
 
-        sorted_list = list(reversed(answers))
+        sorted_list = list(reversed(image_answers))
         images = imagetask.images
+        print results
         # given_Ans_X.last() holds the latest answer (if task is run more than
         # once)
         imagetask.given_Ans_1.add(images.get(id=sorted_list[0]))
